@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>스캐너 사용 설명서</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--canvas:#FFFFFF;--parchment:#F5F5F7;--ink:#1D1D1F;--muted:#6E6E73;--border:#E0E0E0;--blue:#0066CC;--blue-focus:#0071E3;--red:#C0392B;--green:#15803D;
+  font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font-size:1.0625rem;line-height:1.7;word-break:keep-all}
+a{color:var(--blue)} a:focus-visible{outline:2px solid var(--blue-focus);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:48px 20px 80px}
+h1{font-size:clamp(2rem,4vw,2.6rem);font-weight:600;letter-spacing:-0.02em;line-height:1.2;margin:0 0 12px}
+h2{font-size:1.5rem;font-weight:600;margin:56px 0 14px;padding-top:8px}
+h3{font-size:1.125rem;font-weight:600;margin:28px 0 8px}
+p{margin:0 0 12px} ol,ul{margin:0 0 14px;padding-left:22px} li{margin-bottom:6px}
+.lead{font-size:1.2rem;color:var(--muted)}
+.toc{background:var(--parchment);border-radius:18px;padding:20px 24px;margin:32px 0}
+.toc ol{margin:8px 0 0;columns:2;column-gap:28px} .toc a{text-decoration:none}
+.b{display:inline-block;padding:0 8px;border:1px solid var(--border);border-radius:6px;background:var(--parchment);font-size:0.9375rem;font-weight:600;white-space:nowrap}
+.note{border-left:3px solid var(--blue);background:var(--parchment);padding:12px 16px;border-radius:0 11px 11px 0;margin:14px 0;font-size:0.975rem}
+.warn{border-left-color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:0.95rem;margin:8px 0 16px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-size:0.85rem;font-weight:600}
+.tbl{overflow-x:auto}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--border);font-size:0.875rem;color:var(--muted)}
+@media (max-width:640px){.toc ol{columns:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>스캐너 사용 설명서</h1>
+<p class="lead">문서 사진이나 PDF를 올리면 반듯하게 펴고 그림자를 지워 줍니다. 글자를 뽑아 복사하거나 PDF·사진으로 저장하고, 바로 인쇄할 수 있어요.</p>
+
+<nav class="toc"><b>차례</b>
+<ol>
+<li><a href="#s1">로그인하기</a></li>
+<li><a href="#s2">사진·PDF 올리기</a></li>
+<li><a href="#s3">모서리 맞추기</a></li>
+<li><a href="#s4">보정 고르기</a></li>
+<li><a href="#s5">저장·인쇄·공유</a></li>
+<li><a href="#ai">글자 뽑기 (AI로 읽기)</a></li>
+<li><a href="#s7">내 기록</a></li>
+<li><a href="#s8">이럴 땐 이렇게</a></li>
+</ol></nav>
+
+<h2 id="s1">1. 로그인하기</h2>
+<ol>
+<li><a href="https://treditor88.github.io/scanner/">스캐너 사이트</a>를 엽니다.</li>
+<li><span class="b">HEO Works 계정으로 로그인</span>을 누릅니다.</li>
+<li>HEO Works 에서 로그인하면 스캐너로 바로 돌아옵니다. 계정이 없으면 거기서 가입하세요.</li>
+</ol>
+<p>로그인은 12시간 동안 유지돼요. 끝나면 다시 로그인하면 됩니다. 작업 중이던 쪽은 그대로 남아요.</p>
+
+<h2 id="s2">2. 사진·PDF 올리기</h2>
+<ul>
+<li><span class="b">파일 고르기</span>로 사진이나 PDF를 고릅니다. 여러 개를 한 번에 골라도 돼요.</li>
+<li>휴대폰에서는 <span class="b">카메라로 찍기</span>로 바로 찍을 수 있어요.</li>
+<li>컴퓨터에서는 파일을 화면에 끌어다 놓거나, 복사한 사진을 <b>Ctrl+V</b>로 붙여 넣어도 돼요.</li>
+<li>다 올린 뒤에도 위쪽 <span class="b">추가</span>나 왼쪽 <span class="b">쪽 추가</span>로 더 넣을 수 있어요. 한 번에 60쪽까지 다룰 수 있어요.</li>
+</ul>
+<div class="note"><b>잘 찍는 법.</b> 어두운 책상 위에 종이를 놓고, 종이 네 모서리가 다 보이게 위에서 찍으면 모서리를 가장 잘 찾아요.</div>
+
+<h2 id="s3">3. 모서리 맞추기</h2>
+<ol>
+<li>사진을 올리면 문서 모서리를 자동으로 찾아 파란 점 네 개로 보여 줍니다.</li>
+<li>점이 모서리와 어긋나면 점을 끌어서 맞춥니다. 끄는 동안 손가락 옆에 확대경이 떠요.</li>
+<li><span class="b">적용</span>을 누르면 비스듬한 사진이 반듯한 문서로 펴집니다.</li>
+</ol>
+<ul>
+<li><span class="b">자동 찾기</span>: 모서리를 다시 찾아요. <span class="b">전체 선택</span>: 사진 전체를 그대로 써요.</li>
+<li>위쪽 돌리기 버튼으로 90도씩 돌리고, 화살표 버튼으로 쪽 순서를 바꾸고, 휴지통으로 쪽을 지워요.</li>
+<li><span class="b">자르기</span> / <span class="b">결과</span> 단추로 원래 사진과 보정된 결과를 오갈 수 있어요.</li>
+</ul>
+
+<h2 id="s4">4. 보정 고르기</h2>
+<div class="tbl"><table>
+<tr><th>보정</th><th>이럴 때</th></tr>
+<tr><td><b>선명 문서</b></td><td>기본값. 그림자와 누런 빛을 지우고 종이를 하얗게, 글자는 진하게.</td></tr>
+<tr><td><b>흑백</b></td><td>복사한 것처럼 검정·흰색만. 글자 문서, 인쇄할 때 잉크 절약.</td></tr>
+<tr><td><b>회색</b></td><td>색은 빼되 사진·그림의 흐린 부분은 살리고 싶을 때.</td></tr>
+<tr><td><b>자동 색</b></td><td>색깔이 중요한 문서(그림, 포스터). 밝기만 알맞게 맞춰요.</td></tr>
+<tr><td><b>원본</b></td><td>보정 없이 펴기만.</td></tr>
+</table></div>
+<p><b>밝기</b>·<b>대비</b> 막대로 더 맞출 수 있어요. <span class="b">이 보정을 모든 쪽에 적용</span>을 누르면 다른 쪽도 똑같이 바뀌어요.</p>
+
+<h2 id="s5">5. 저장·인쇄·공유</h2>
+<ul>
+<li><b>범위</b>: 모든 쪽 또는 지금 보는 쪽만 고를 수 있어요.</li>
+<li><span class="b">PDF 저장</span>: 여러 쪽을 PDF 한 파일로 묶어요. 용지는 <b>A4에 맞추기</b> 또는 <b>사진 크기 그대로</b> 중에서 골라요.</li>
+<li><span class="b">사진 저장</span>: 쪽마다 JPG(파일이 작음)나 PNG(더 깨끗함)로 저장해요. 여러 쪽이면 파일이 여러 개 내려받아져요. 브라우저가 "여러 파일 다운로드 허용"을 물으면 허용을 누르세요.</li>
+<li><span class="b">인쇄</span>: 바로 인쇄 창이 열려요.</li>
+<li><span class="b">공유</span>(휴대폰): PDF를 메신저 등으로 바로 보내요. "한 번 더 눌러 주세요"가 나오면 한 번 더 누르면 돼요.</li>
+</ul>
+
+<h2 id="ai">6. 글자 뽑기 (AI로 읽기)</h2>
+<ol>
+<li>오른쪽(휴대폰은 아래쪽) <b>텍스트 추출</b>에서 <b>방법</b>을 고릅니다.</li>
+<li><span class="b">이 쪽 추출</span> 또는 <span class="b">모든 쪽 추출</span>을 누릅니다.</li>
+<li>뽑힌 글자가 아래 칸에 나와요. 틀린 글자는 칸에서 직접 고치고, <span class="b">복사</span>나 <span class="b">txt 저장</span>을 누르세요.</li>
+</ol>
+<div class="tbl"><table>
+<tr><th>방법</th><th>특징</th></tr>
+<tr><td><b>AI로 읽기</b> (기본)</td><td>Google 의 AI(Gemini)가 읽어요. 손글씨·표·작은 글씨도 잘 읽고 줄바꿈도 정리해 줘요. 하루 20번까지.</td></tr>
+<tr><td><b>기기 안에서 읽기</b></td><td>사진이 밖으로 나가지 않고 이 기기 안에서만 읽어요. 처음 한 번 인식 자료(약 10MB)를 내려받고, 언어를 골라야 해요. 인쇄된 글자는 잘 읽지만 손글씨·표에는 약해요.</td></tr>
+</table></div>
+<div class="note warn"><b>AI로 읽으면 사진이 Google 로 보내져요.</b>
+<ul style="margin:8px 0 0">
+<li>글자를 뽑을 쪽의 보정된 사진이 스캐너를 거쳐 <b>Google Gemini</b>로 보내지고, Google 이 읽은 글자를 돌려줍니다.</li>
+<li>보낸 사진은 Google 의 정책에 따라 처리되며, Google 이 서비스를 개선하는 데 쓸 수도 있어요.</li>
+<li>주민등록번호·성적·건강 정보처럼 <b>남에게 보이면 안 되는 문서</b>는 <b>기기 안에서 읽기</b>를 고르세요. 고른 방법은 이 기기에 기억돼요.</li>
+</ul></div>
+<p>AI 읽기가 안 될 때(오늘 횟수를 다 썼거나, 붐비거나, 연결이 끊겼을 때)는 자동으로 <b>기기 안에서 읽기</b>로 바꿔 읽고, 글자 칸 위에 그 이유를 알려 줘요.</p>
+
+<h2 id="s7">7. 내 기록</h2>
+<p>위쪽 <span class="b">기록</span>을 누르면 내 계정에 남은 기록이 나와요. 다른 기기에서 로그인해도 같은 기록을 볼 수 있어요.</p>
+<ul>
+<li><b>원본 사진</b>: 사진을 올릴 때 남아요(PDF는 사진이 아니라 안 남아요).</li>
+<li><b>스캔 결과</b>: PDF·사진 저장, 인쇄, 공유를 누를 때 보정된 결과가 남아요. 같은 결과는 한 번만 남아요.</li>
+<li>종류마다 <b>최근 10장</b>, <b>3일 동안만</b> 남아요. 10장이 넘거나 3일이 지나면 오래된 것부터 자동으로 지워져요. 각 장 밑에 언제 지워지는지 나와요.</li>
+<li><span class="b">열기</span>: 다시 편집 화면으로 가져와요. <span class="b">받기</span>: 사진 파일로 내려받아요. 휴지통: 바로 지워요(되돌릴 수 없어요).</li>
+</ul>
+<div class="note">기록은 내 계정에서만 보여요. 다른 사람은 볼 수 없어요. 오래 보관할 문서는 <span class="b">PDF 저장</span>으로 내 기기에 저장해 두세요.</div>
+
+<h2 id="s8">8. 이럴 땐 이렇게</h2>
+<div class="tbl"><table>
+<tr><th>상황</th><th>이렇게 하세요</th></tr>
+<tr><td>"모서리를 못 찾았어요"</td><td>파란 점을 직접 끌어 모서리에 맞추세요. 다음에는 종이와 색이 다른(어두운) 바닥에서 찍어 보세요.</td></tr>
+<tr><td>그림이나 사진 부분이 하얗게 날아가요</td><td>보정을 <b>자동 색</b>이나 <b>원본</b>으로 바꾸세요.</td></tr>
+<tr><td>뽑은 글자가 엉망이에요</td><td><b>AI로 읽기</b>로 바꿔 보세요. 기기 안에서 읽을 때는 언어를 맞게 고르고, 보정을 <b>흑백</b>으로 바꾸면 나아져요.</td></tr>
+<tr><td>"오늘 AI 읽기 횟수를 다 썼어요"</td><td>내일 다시 쓸 수 있어요. 그동안은 자동으로 기기 안에서 읽어요.</td></tr>
+<tr><td>"로그인이 끝나 기록이 남지 않아요"</td><td>다시 로그인하세요. 작업 중이던 쪽은 그대로 있어요.</td></tr>
+<tr><td>아이폰 사진(HEIC)이 안 열려요</td><td>사진을 JPG로 바꿔 올리거나, 카메라로 찍기를 쓰세요.</td></tr>
+<tr><td>페이지를 닫았더니 작업이 사라졌어요</td><td>편집 중인 쪽은 이 화면에만 있어요. <span class="b">기록</span>에 남은 사진·결과를 <span class="b">열기</span>로 다시 가져오세요.</td></tr>
+<tr><td>그 밖의 문제</td><td>관리자에게 문의하세요.</td></tr>
+</table></div>
+
+<footer>스캐너 · <a href="https://treditor88.github.io/scanner/">사이트 열기</a> · <a href="https://heoworks.pages.dev">HEO Works</a></footer>
+</div>
+</body>
+
+</html>

@@ -150,6 +150,7 @@ textarea{width:100%;min-height:180px;resize:vertical;border:1px solid var(--bord
 .prog{height:6px;background:#E5E5EA;border-radius:3px;overflow:hidden;margin:10px 0 4px;display:none}
 .prog i{display:block;height:100%;width:0;background:var(--blue);transition:width .2s}
 .note{font-size:.8125rem;color:var(--muted);margin:8px 0 0}
+.note a{color:var(--blue)}
 
 /* 진행·알림 */
 #busy{position:fixed;inset:0;z-index:50;background:rgba(255,255,255,.7);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-weight:600}
@@ -199,6 +200,7 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
   <span class="who" id="who"></span>
   <button class="btn small plain" id="hdrAdd" hidden><svg class="i"><use href="#i-plus"/></svg>추가</button>
   <button class="btn small plain" id="hdrRecs" hidden><svg class="i"><use href="#i-clock"/></svg>기록</button>
+  <a class="btn small plain" href="help.html" target="_blank" rel="noopener">설명서</a>
   <button class="btn small plain" id="hdrOut" hidden>로그아웃</button>
 </header>
 
@@ -296,13 +298,15 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
 
       <div class="panel">
         <h2><svg class="i"><use href="#i-text"/></svg>텍스트 추출</h2>
-        <div class="field"><label for="selLang">언어</label><select id="selLang"><option value="kor+eng">한국어 + 영어</option><option value="eng">영어만</option><option value="kor">한국어만</option><option value="jpn+eng">일본어 + 영어</option><option value="chi_sim+eng">중국어(간체) + 영어</option></select></div>
+        <div class="field"><label for="selEngine">방법</label><select id="selEngine"><option value="ai">AI로 읽기 (더 정확)</option><option value="local">기기 안에서 읽기</option></select></div>
+        <p class="note" id="engineNote" style="margin:-4px 0 10px">AI로 읽으면 이 쪽 사진이 Google(Gemini)로 보내져요. <a href="help.html#ai" target="_blank" rel="noopener">자세히</a></p>
+        <div class="field" id="langRow"><label for="selLang">언어</label><select id="selLang"><option value="kor+eng">한국어 + 영어</option><option value="eng">영어만</option><option value="kor">한국어만</option><option value="jpn+eng">일본어 + 영어</option><option value="chi_sim+eng">중국어(간체) + 영어</option></select></div>
         <div class="grid2">
           <button class="btn primary" id="bOcr">이 쪽 추출</button>
           <button class="btn" id="bOcrAll">모든 쪽 추출</button>
         </div>
         <div class="prog" id="ocrProg"><i></i></div>
-        <p class="note" id="ocrMsg" aria-live="polite">처음 한 번은 글자 인식 자료(약 10MB)를 내려받아요.</p>
+        <p class="note" id="ocrMsg" aria-live="polite"></p>
         <label for="ocrOut" class="sr">추출한 글자</label>
         <textarea id="ocrOut" placeholder="여기에 뽑은 글자가 나와요. 고쳐 쓸 수도 있어요."></textarea>
         <div class="grid2" style="margin-top:8px">
@@ -1008,43 +1012,73 @@ function ocrProgress(v, msg) {
   if (v != null) $('#ocrProg i').style.width = Math.round(v * 100) + '%';
   if (msg) $('#ocrMsg').textContent = msg;
 }
+async function tessRead(c) {   // 기기 안 인식기(Tesseract). 처음 한 번 인식 자료를 내려받는다
+  await loadScript(LIB.tess);
+  const lang = $('#selLang').value;
+  if (!ocrW || ocrLang !== lang) {
+    if (ocrW) await ocrW.terminate();
+    ocrW = null;
+    ocrProgress(0, '기기 안 인식기 준비 중…(처음 한 번 약 10MB)');
+    ocrW = await Tesseract.createWorker(lang, 1, {
+      logger: m => {
+        if (m.status === 'recognizing text') ocrProgress(m.progress, `${ocrPhase} 글자 읽는 중… ${Math.round(m.progress * 100)}%`);
+        else if (/load|download|initializ/i.test(m.status)) ocrProgress(m.progress || 0, '인식 자료 준비 중…' + (m.progress ? ` ${Math.round(m.progress * 100)}%` : ''));
+      },
+    });
+    ocrLang = lang;
+  }
+  const { data } = await ocrW.recognize(c);
+  return tidy(data.text);
+}
+const AI_ERRS = { ai_user_limit: '오늘 AI 읽기 횟수(20번)를 다 썼어요', ai_limit: 'AI 읽기가 오늘 붐벼서 쉬는 중이에요', ai_off: 'AI 읽기를 지금 쓸 수 없어요', ai_error: 'AI 읽기에 실패했어요', ai_empty: 'AI가 글자를 찾지 못했어요', bad_image: '사진이 너무 커요', network: '서버에 연결하지 못했어요' };
+async function aiRead(c) {   // → {text} 또는 {err}
+  const img = jpegUnder(c, 1800, 440000);
+  if (!img) return { err: 'bad_image' };
+  const r = await api('scanOcr', { token: auth && auth.token, data: img.b });
+  return r.ok ? { text: String(r.text || '').trim(), left: r.left } : { err: r.error || 'ai_error' };
+}
 async function runOcr(list) {
   if (ocrBusy || isBusy()) return;
+  if (!auth) return toast('먼저 로그인해 주세요');
   const box = $('#ocrOut').value.trim();
   if (box && box !== ocrLast && !confirm('직접 고친 글이 있어요. 새로 뽑은 글로 바꿀까요?')) return;
   ocrBusy = working = true;
   const nums = list.map(p => S.pages.indexOf(p) + 1); $('#bOcr').disabled = $('#bOcrAll').disabled = true;
+  let useAi = $('#selEngine').value === 'ai', fellBack = '', left = null, viaAi = 0;
   try {
-    ocrProgress(0, '글자 인식 준비 중…');
-    await loadScript(LIB.tess);
-    const lang = $('#selLang').value;
-    if (!ocrW || ocrLang !== lang) {
-      if (ocrW) await ocrW.terminate();
-      ocrW = null;
-      ocrW = await Tesseract.createWorker(lang, 1, {
-        logger: m => {
-          if (m.status === 'recognizing text') ocrProgress(m.progress, `${ocrPhase} 글자 읽는 중… ${Math.round(m.progress * 100)}%`);
-          else if (/load|download|initializ/i.test(m.status)) ocrProgress(m.progress || 0, '인식 자료 준비 중…' + (m.progress ? ` ${Math.round(m.progress * 100)}%` : ''));
-        },
-      });
-      ocrLang = lang;
-    }
     const parts = [];
     for (let i = 0; i < list.length; i++) {
       const p = list[i]; ocrPhase = list.length > 1 ? `${i + 1}/${list.length}쪽` : '';
       const c = outCanvas(p); if (p !== curPage()) dropCache(p);
-      const { data } = await ocrW.recognize(c);
-      const t = tidy(data.text);
+      let t = null;
+      if (useAi) {
+        ocrProgress(i / list.length, `${ocrPhase} AI가 글자 읽는 중…`);
+        const r = await aiRead(c);
+        if (r.err === 'bad_token') { freeCanvas(c); return; }
+        if (r.err) { fellBack = AI_ERRS[r.err] || 'AI 읽기에 실패했어요'; useAi = false; }   // 이번 남은 쪽은 기기 안에서
+        else { t = r.text; left = r.left; viaAi++; }
+      }
+      if (t === null) t = await tessRead(c);
+      freeCanvas(c);
       parts.push(list.length > 1 ? `--- ${nums[i]}쪽 ---\n${t}` : t);
     }
     const txt = parts.join('\n\n').trim();
     $('#ocrOut').value = ocrLast = txt;
-    ocrProgress(null, txt ? `다 뽑았어요(${txt.replace(/\s/g, '').length}자). 틀린 글자는 직접 고쳐 쓰세요.` : '글자를 찾지 못했어요. 보정을 "흑백"으로 바꾸거나 더 밝게 찍어 보세요.');
+    const how = fellBack ? `${fellBack} → 기기 안에서 읽었어요. ` : viaAi ? `AI로 읽었어요${left != null ? `(오늘 ${left}번 남음)` : ''}. ` : '';
+    ocrProgress(null, how + (txt ? `${txt.replace(/\s/g, '').length}자. 틀린 글자는 직접 고쳐 쓰세요.` : '글자를 찾지 못했어요. 보정을 "흑백"으로 바꾸거나 더 밝게 찍어 보세요.'));
   } catch (e) {
     console.error(e); if (ocrW) ocrW.terminate().catch(() => {}); ocrW = null; ocrLang = '';
     ocrProgress(null, '글자 인식에 실패했어요: ' + (e.message || e));
   } finally { ocrBusy = working = false; $('#bOcr').disabled = $('#bOcrAll').disabled = false; }
 }
+function engineUi() {   // 언어 고르기는 기기 안 인식기에만 필요(AI 는 알아서 읽음). 고른 방법은 이 기기에 기억
+  const ai = $('#selEngine').value === 'ai';
+  $('#langRow').hidden = ai; $('#engineNote').hidden = !ai;
+  $('#ocrMsg').textContent = ai ? '' : '처음 한 번은 글자 인식 자료(약 10MB)를 내려받아요.';
+  try { localStorage.setItem('scanner:engine', $('#selEngine').value); } catch (e) {}
+}
+try { if (localStorage.getItem('scanner:engine') === 'local') $('#selEngine').value = 'local'; } catch (e) {}
+$('#selEngine').onchange = engineUi; engineUi();
 function tidy(t) {   // 한글 사이 낱자 띄어쓰기(인식기가 흔히 넣는 것) 정리, 빈 줄 줄이기
   return t.replace(/(?<![가-힣])[가-힣](?: [가-힣]){3,}(?![가-힣])/g, m => m.replace(/ /g, '')).replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
