@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>스캐너</title>
-<meta name="description" content="사진이나 PDF를 올리면 문서 가장자리를 찾아 반듯하게 펴고, 그림자를 지우고, 글자를 뽑고, PDF·사진으로 저장하거나 인쇄합니다. HEO Works 계정에 원본 사진과 스캔 결과가 최근 10장씩 남습니다.">
+<meta name="description" content="사진이나 PDF를 올리면 문서 가장자리를 찾아 반듯하게 펴고, 그림자를 지우고, 글자를 뽑고, PDF·사진으로 저장하거나 인쇄합니다. HEO Works 계정에 원본 사진과 스캔 결과가 최근 10장씩 3일 동안 남습니다.">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -211,7 +211,7 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
     <p class="lead">문서 사진이나 PDF를 올리면 가장자리를 찾아 반듯하게 펴고 그림자를 지워 줍니다. 글자를 뽑아 복사하거나 PDF·사진으로 저장하고 바로 인쇄할 수 있어요.</p>
     <div id="gate" hidden>
       <svg class="i big"><use href="#i-lock"/></svg>
-      <p>HEO Works 계정으로 로그인하면 쓸 수 있어요.<br>원본 사진과 스캔 결과가 계정에 최근 10장씩 남아서 다른 기기에서도 다시 열 수 있어요.</p>
+      <p>HEO Works 계정으로 로그인하면 쓸 수 있어요.<br>원본 사진과 스캔 결과가 계정에 최근 10장씩 3일 동안 남아서 다른 기기에서도 다시 열 수 있어요.</p>
       <a class="btn primary" id="loginBtn" href="https://heoworks.pages.dev/#login=scan">HEO Works 계정으로 로그인</a>
     </div>
     <div id="drop" hidden>
@@ -313,10 +313,10 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
     </aside>
   </section>
 </main>
-<footer>보정은 브라우저 안에서 해요. 올린 원본 사진과, PDF·사진 저장·인쇄·공유를 누른 스캔 결과는 계정 서버에 최근 10장씩만 남아요(오래된 것부터 자동으로 지워져요).</footer>
+<footer>보정은 브라우저 안에서 해요. 올린 원본 사진과, PDF·사진 저장·인쇄·공유를 누른 스캔 결과는 계정 서버에 최근 10장씩, 3일 동안만 남아요(3일이 지나거나 10장을 넘으면 자동으로 지워져요).</footer>
 
 <dialog id="recs" aria-labelledby="recTitle">
-  <div class="recHead"><h2 id="recTitle">내 기록</h2><button class="iconbtn" id="recClose" aria-label="닫기"><svg class="i"><use href="#i-plus" transform="rotate(45 12 12)"/></svg></button></div>
+  <div class="recHead"><h2 id="recTitle">내 기록 <small style="font-size:.875rem;color:var(--muted);font-weight:400">3일 뒤 자동 삭제</small></h2><button class="iconbtn" id="recClose" aria-label="닫기"><svg class="i"><use href="#i-plus" transform="rotate(45 12 12)"/></svg></button></div>
   <div class="recBody">
     <h3>스캔 결과 <small id="cntScan"></small></h3>
     <ul class="recGrid" id="listScan"></ul>
@@ -515,7 +515,9 @@ async function openRecs() {
       const li = document.createElement('li'); li.className = 'rec';
       const img = document.createElement('img'); img.alt = f.name || ''; img.loading = 'lazy';
       if (/^\/9j\/[A-Za-z0-9+/=]+$/.test(f.thumb || '')) img.src = 'data:image/jpeg;base64,' + f.thumb;
-      const t = document.createElement('div'); t.className = 't'; t.textContent = fmtAt(f.at) + ' · ' + Math.max(1, Math.round(f.size / 1024)) + 'KB';
+      const t = document.createElement('div'); t.className = 't'; const left = f.at + (r.ttl || 259200000) - Date.now(), hrs = Math.max(0, Math.ceil(left / 3600000));
+      t.textContent = fmtAt(f.at) + ' · ' + (hrs > 24 ? Math.ceil(hrs / 24) + '일 뒤 삭제' : hrs + '시간 뒤 삭제');
+      t.title = Math.max(1, Math.round(f.size / 1024)) + 'KB';
       const a = document.createElement('div'); a.className = 'a';
       const bOpen = document.createElement('button'); bOpen.textContent = '열기'; bOpen.onclick = () => recOpen(f);
       const bDown = document.createElement('button'); bDown.textContent = '받기'; bDown.onclick = () => recDown(f);
