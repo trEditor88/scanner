@@ -153,6 +153,8 @@ textarea{width:100%;min-height:180px;resize:vertical;border:1px solid var(--bord
 .prog{height:6px;background:#E5E5EA;border-radius:3px;overflow:hidden;margin:10px 0 4px;display:none}
 .prog i{display:block;height:100%;width:0;background:var(--blue);transition:width .2s}
 .note{font-size:.8125rem;color:var(--muted);margin:8px 0 0}
+h3.sub{font-size:.9375rem;font-weight:700;margin:18px 0 8px}
+h3.sub small{font-weight:400;color:var(--muted);font-size:.8125rem}
 .note a{color:var(--blue)}
 
 /* 진행·알림 */
@@ -264,10 +266,11 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
         <div class="toolrow">
           <button class="btn small plain" id="bAuto"><svg class="i"><use href="#i-magic"/></svg>자동 찾기</button>
           <button class="btn small plain" id="bFull"><svg class="i"><use href="#i-full"/></svg>전체 선택</button>
+          <button class="btn small plain" id="bAiCorner" title="사진을 Google(Gemini)로 보내 모서리를 찾아요"><svg class="i"><use href="#i-magic"/></svg>AI로 찾기</button>
           <div style="flex:1"></div>
           <button class="btn small primary" id="bApply"><svg class="i"><use href="#i-check"/></svg>적용</button>
         </div>
-        <p class="hint">파란 점 네 개를 문서 모서리에 맞추세요. 점을 누르고 화살표 키로도 움직일 수 있어요.</p>
+        <p class="hint">파란 점 네 개를 문서 모서리에 맞추세요. 점을 누르고 화살표 키로도 움직일 수 있어요. 자동 찾기가 틀리면 <b>AI로 찾기</b>(사진이 Google 로 가요).</p>
       </div>
     </div>
 
@@ -298,6 +301,8 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
           <button class="btn" id="bPrint"><svg class="i"><use href="#i-print"/></svg>인쇄</button>
           <button class="btn" id="bShare" hidden><svg class="i"><use href="#i-share"/></svg>공유</button>
         </div>
+        <button class="btn full" id="bExam" style="margin-top:8px"><svg class="i"><use href="#i-text"/></svg>시험지 사이트로 보내기</button>
+        <p class="note">보정된 사진(최대 10쪽)과 뽑은 글자를 시험지 사이트의 'AI로 문제 만들기'에 넣어 열어요.</p>
       </div>
 
       <div class="panel">
@@ -316,6 +321,21 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
         <div class="grid2" style="margin-top:8px">
           <button class="btn small plain" id="bCopy"><svg class="i"><use href="#i-copy"/></svg>복사</button>
           <button class="btn small plain" id="bTxt"><svg class="i"><use href="#i-save"/></svg>txt 저장</button>
+        </div>
+        <h3 class="sub">글자 활용 <small>(AI · 글자가 Google 로 가요)</small></h3>
+        <div class="grid2">
+          <button class="btn small plain" data-ai="summary">요약</button>
+          <button class="btn small plain" data-ai="table">표 → 엑셀</button>
+          <button class="btn small plain" data-ai="en">영어로 번역</button>
+          <button class="btn small plain" data-ai="ko">한국어로 번역</button>
+        </div>
+        <div id="aiBox" hidden>
+          <label for="aiOut" class="sr">AI 결과</label>
+          <textarea id="aiOut" style="margin-top:10px;min-height:140px"></textarea>
+          <div class="grid2" style="margin-top:8px">
+            <button class="btn small plain" id="bAiCopy"><svg class="i"><use href="#i-copy"/></svg>복사</button>
+            <button class="btn small plain" id="bAiTxt"><svg class="i"><use href="#i-save"/></svg>txt 저장</button>
+          </div>
         </div>
       </div>
     </aside>
@@ -1127,7 +1147,7 @@ async function tessRead(c) {   // 기기 안 인식기(Tesseract). 처음 한 �
   const { data } = await ocrW.recognize(c);
   return tidy(data.text);
 }
-const AI_ERRS = { ai_user_limit: '오늘 AI 읽기 횟수를 다 썼어요', ai_limit: 'AI 읽기가 오늘 붐벼서 쉬는 중이에요', ai_off: 'AI 읽기를 지금 쓸 수 없어요', ai_error: 'AI 읽기에 실패했어요', ai_empty: 'AI가 글자를 찾지 못했어요', bad_image: '사진이 너무 커요', network: '서버에 연결하지 못했어요' };
+const AI_ERRS = { bad_task: '할 수 없는 작업이에요', no_text: '먼저 글자를 뽑아 주세요', too_long: '글자가 너무 많아요(2만 자까지)', ai_user_limit: '오늘 AI 읽기 횟수를 다 썼어요', ai_limit: 'AI 읽기가 오늘 붐벼서 쉬는 중이에요', ai_off: 'AI 읽기를 지금 쓸 수 없어요', ai_error: 'AI 읽기에 실패했어요', ai_empty: 'AI가 글자를 찾지 못했어요', bad_image: '사진이 너무 커요', network: '서버에 연결하지 못했어요' };
 async function aiRead(c) {   // → {text} 또는 {err}
   const img = jpegUnder(c, 1800, 440000);
   if (!img) return { err: 'bad_image' };
@@ -1214,6 +1234,86 @@ $('#bCopy').onclick = async () => {
 };
 $('#bTxt').onclick = () => { const t = $('#ocrOut').value; if (!t) return toast('저장할 글자가 없어요'); download(new Blob([t], { type: 'text/plain;charset=utf-8' }), `스캔_글자_${stamp()}.txt`); };
 
+/* ---------- 시험지 사이트로 보내기(6) ----------
+   스캐너와 시험지 사이트는 같은 주소(treditor88.github.io)라 브라우저 저장소(IndexedDB 'heo-handoff')를 같이 쓴다.
+   보정된 사진·뽑은 글자를 넣어 두고 시험지 사이트를 연다 → 시험지 사이트가 로그인 뒤 꺼내 'AI로 문제 만들기' 파일 칸에 넣는다(30분 지나면 버림) */
+function handoffPut(val) {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('heo-handoff', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('items');
+    r.onerror = () => rej(r.error);
+    r.onsuccess = () => {
+      const db = r.result, t = db.transaction('items', 'readwrite');
+      val === null ? t.objectStore('items').delete('scan2exam') : t.objectStore('items').put(val, 'scan2exam');
+      t.oncomplete = () => { db.close(); res(); }; t.onerror = t.onabort = () => { db.close(); rej(t.error || new Error('저장 공간이 부족해요')); };   // 용량 초과는 abort 로 끝남
+    };
+  });
+}
+$('#bExam').onclick = () => {
+  const w = window.open('', '_blank');   // 누르자마자 창을 열어 둬야 팝업 차단에 안 걸림
+  if (w) { try { w.document.title = '시험지'; w.document.body.textContent = '사진을 넘기는 중…'; } catch (e) {} }
+  let sent = false;
+  safe(async () => {
+    let list = targets();
+    if (list.length > 10) { list = list.slice(0, 10); toast('시험지에는 앞 10쪽만 보내요'); }
+    const files = [];
+    await eachOut(list, '시험지로 보내는 중', async (c, i) => {
+      const img = jpegUnder(c, 2000, 1400000);
+      if (!img) return;
+      const bin = atob(img.b), u8 = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) u8[k] = bin.charCodeAt(k);
+      files.push({ name: `스캔_${String(i + 1).padStart(2, '0')}.jpg`, blob: new Blob([u8], { type: 'image/jpeg' }) });
+    });
+    const text = $('#ocrOut').value.trim().slice(0, 19000);   // 시험지 '자료' 칸(2만 자)에 이름 머리표까지 들어가게
+    if (!files.length && !text) return toast('보낼 사진이나 글자가 없어요');
+    if (files.length < list.length) toast(`너무 큰 쪽 ${list.length - files.length}개는 빼고 보내요`);
+    await handoffPut({ at: Date.now(), uid: auth.user.id, files, text });   // uid: 시험지 사이트가 같은 계정일 때만 꺼냄
+    const url = new URL('../exam-maker/', location.href).href;
+    sent = true;
+    if (w) { try { w.opener = null; } catch (e) {} w.location.href = url; } else location.href = url;
+    toast('시험지 사이트에서 이어서 하세요');
+  }).finally(() => { if (w && !sent) try { w.close(); } catch (e) {} });
+};
+
+/* ---------- AI로 모서리 찾기(2) ---------- */
+$('#bAiCorner').onclick = () => safe(async () => {
+  const p = curPage(); if (!p) return;
+  busy(true, 'AI가 모서리를 찾는 중…');
+  const sm = scaleToCanvas(p.src, p.src.width, p.src.height, 1024), b = sm.toDataURL('image/jpeg', .8).split(',')[1]; freeCanvas(sm);
+  const r = await api('scanCorners', { token: auth && auth.token, data: b });
+  if (!r.ok) return toast(AI_ERRS[r.error] || errMsg(r.error));
+  if (!r.found) return toast('AI도 문서를 찾지 못했어요. 점을 직접 옮겨 주세요');
+  p.quad = orderCorners(r.corners.map(([x, y]) => [clamp01(x), clamp01(y)]));
+  S.mode = 'crop'; renderEditor();
+  toast(`AI가 찾은 모서리예요. 맞으면 적용을 누르세요(오늘 ${r.left}번 남음)`);
+});
+
+/* ---------- 글자 활용(5): 요약·번역·표 → 엑셀 ---------- */
+const AI_TASK_KO = { summary: '요약', en: '영어 번역', ko: '한국어 번역', table: '표' };
+const safeCell = (c) => /^[=+\-@\t\r]/.test(c) && !/^[+-]?\d[\d,.]*%?$/.test(c) ? "'" + c : c;   // 숫자(-5, +82)는 그대로
+function csvOf(rows) {   // \uc5d1\uc140\uc774 \uc218\uc2dd\uc73c\ub85c \uc2e4\ud589\ud558\uc9c0 \uc54a\uac8c: =, +, -, @, \ud0ed\uc73c\ub85c \uc2dc\uc791\ud558\ub294 \uce78\uc740 \uc55e\uc5d0 ' \ub97c \ubd99\uc778\ub2e4
+  const cell = (c) => { c = safeCell(c); return /[",\n\r]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; };
+  return '\ufeff' + rows.map(r => r.map(cell).join(',')).join('\r\n');
+}
+document.querySelectorAll('[data-ai]').forEach(b => b.onclick = () => safe(async () => {
+  const task = b.dataset.ai, text = $('#ocrOut').value.trim();
+  if (!text) return toast('먼저 글자를 뽑아 주세요');
+  if (text.length > 20000) return toast('글자가 너무 많아요(2만 자까지)');
+  busy(true, `AI가 ${AI_TASK_KO[task]} 만드는 중…`);
+  const r = await api('scanTextAi', { token: auth && auth.token, task, text });
+  if (!r.ok) return toast(AI_ERRS[r.error] || errMsg(r.error));
+  $('#aiBox').hidden = false;
+  if (task === 'table') {
+    if (!r.rows || !r.rows.length) { $('#aiOut').value = ''; return toast('글자에서 표를 찾지 못했어요'); }
+    download(new Blob([csvOf(r.rows)], { type: 'text/csv;charset=utf-8' }), `스캔_표_${stamp()}.csv`);
+    $('#aiOut').value = r.rows.map(x => x.map(safeCell).join('\t')).join('\n');   // 엑셀에 붙여 넣어도 수식이 안 되게
+    return toast(`표(${r.rows.length}줄)를 엑셀 파일(CSV)로 저장했어요`);
+  }
+  $('#aiOut').value = r.text;
+  toast(`${AI_TASK_KO[task]}을 만들었어요(오늘 ${r.left}번 남음)`);
+}));
+$('#bAiCopy').onclick = async () => { const t = $('#aiOut').value; if (!t) return; try { await navigator.clipboard.writeText(t); } catch { $('#aiOut').select(); document.execCommand('copy'); } toast('복사했어요'); };
+$('#bAiTxt').onclick = () => { const t = $('#aiOut').value; if (t) download(new Blob([t], { type: 'text/plain;charset=utf-8' }), `스캔_AI_${stamp()}.txt`); };
+
 /* ---------- 이벤트 ---------- */
 function pickFiles() { $('#fileIn').click(); }
 document.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => (b.dataset.pick === 'cam' ? $('#camIn') : $('#fileIn')).click());
@@ -1270,11 +1370,15 @@ $('#recs').addEventListener('click', e => { if (e.target === $('#recs')) $('#rec
 $('#hdrOut').onclick = async () => {
   if (S.pages.length && !confirm('로그아웃하면 지금 작업 중인 쪽이 사라져요. 로그아웃할까요?')) return;
   if (queue.length || qRun) return toast('기록 저장이 끝난 뒤에 로그아웃해 주세요');
-  const t = auth && auth.token; setAuth(null); showGate('로그아웃했어요');
+  const t = auth && auth.token; setAuth(null); showGate('로그아웃했어요'); handoffPut(null).catch(() => {});
   if (t) api('scanLogout', { token: t });
 };
 addEventListener('hashchange', async () => { await ssoFromHash(); show(); });
 (async () => { await ssoFromHash(); show(); })();
+try {   // 시험지로 넘기려다 남은 것(30분 지남)은 기기에서 지운다
+  const q = indexedDB.open('heo-handoff', 1); q.onupgradeneeded = () => q.result.createObjectStore('items');
+  q.onsuccess = () => { const db = q.result, st = db.transaction('items', 'readwrite').objectStore('items'), g = st.get('scan2exam'); g.onsuccess = () => { if (g.result && !(Date.now() - g.result.at < 30 * 60000)) st.delete('scan2exam'); }; };
+} catch (e) {}
 </script>
 </body>
 </html>
