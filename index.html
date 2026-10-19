@@ -837,11 +837,14 @@ function background(s, w, h) {
     const k = gy * gw + gx; mx[0][k] = br; mx[1][k] = bg; mx[2][k] = bb;
   }
   return mx.map(m => {
-    const dl = new Float32Array(n);   // 이웃 3×3 최댓값(글자가 꽉 찬 칸 메우기)
+    // 글자가 꽉 차 이웃보다 훨씬 어두운 칸만 이웃 중간값으로 메움. 최댓값으로 메우면 그림자 경계의 어두운 쪽이
+    // 밝은 쪽 바탕으로 나뉘어 오히려 어두워짐
+    const dl = new Float32Array(n), nb = [];
     for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
-      let v = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const yy = y + dy, xx = x + dx; if (yy >= 0 && yy < gh && xx >= 0 && xx < gw && m[yy * gw + xx] > v) v = m[yy * gw + xx]; }
-      dl[y * gw + x] = v;
+      nb.length = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const yy = y + dy, xx = x + dx; if (yy >= 0 && yy < gh && xx >= 0 && xx < gw) nb.push(m[yy * gw + xx]); }
+      nb.sort((a, b) => a - b); const med = nb[nb.length >> 1], own = m[y * gw + x];
+      dl[y * gw + x] = own < med * .8 ? med : own;
     }
     return { g: boxBlur(boxBlur(dl, gw, gh, 1), gw, gh, 1), gw, gh, B };
   });
