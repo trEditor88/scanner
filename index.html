@@ -35,7 +35,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 /* 헤더 */
 header{position:sticky;top:0;z-index:20;height:60px;display:flex;align-items:center;gap:12px;padding:0 24px;
   background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--hairline)}
-.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.0625rem;color:var(--ink);text-decoration:none}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.0625rem;color:var(--ink);text-decoration:none;white-space:nowrap;flex:none}
 .logo img{width:32px;height:32px}
 header .sp{flex:1}
 .who{font-size:.875rem;color:var(--muted);max-width:30vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -78,8 +78,8 @@ dialog#recs::backdrop{background:rgba(0,0,0,.4)}
 
 /* 첫 화면 */
 #empty{max-width:800px;margin:0 auto;padding:clamp(48px,8vw,104px) 24px 64px}
-#empty h1{font-size:clamp(2rem,4.5vw,3.25rem);line-height:1.2;letter-spacing:-.02em;margin:0 0 16px;font-weight:700}
-#empty .lead{font-size:1.1875rem;color:var(--muted);margin:0 0 40px;max-width:60ch}
+#empty h1{font-size:clamp(2rem,4.5vw,3.25rem);line-height:1.2;letter-spacing:-.02em;margin:0 0 16px;font-weight:700;word-break:keep-all}
+#empty .lead{word-break:keep-all;font-size:1.1875rem;color:var(--muted);margin:0 0 40px;max-width:60ch}
 #drop{border:2px dashed #C7C7CC;border-radius:var(--r-lg);background:var(--parchment);padding:48px 24px;text-align:center;transition:border-color .15s,background .15s}
 #drop.over{border-color:var(--blue);background:#EEF5FC}
 #drop .big{width:48px;height:48px;color:var(--blue);margin-bottom:8px}
@@ -172,6 +172,12 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
   #empty{padding:40px 16px 48px}
   #stage{height:56vh;min-height:280px}
 }
+@media (max-width:560px){
+  header{padding:0 12px;gap:8px}
+  header .btn.small{padding:6px 10px}
+  header .btn .lbl{display:none}
+}
+@media (max-width:380px){.logo .lbl{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:1.5s!important}}
 </style>
 </head>
@@ -199,12 +205,12 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
 </svg>
 
 <header>
-  <a class="logo" href="./"><img src="icon.svg" alt="">스캐너</a>
+  <a class="logo" href="./"><img src="icon.svg" alt="스캐너"><span class="lbl">스캐너</span></a>
   <div class="sp"></div>
   <span id="saveState" aria-live="polite"></span>
   <span class="who" id="who"></span>
-  <button class="btn small plain" id="hdrAdd" hidden><svg class="i"><use href="#i-plus"/></svg>추가</button>
-  <button class="btn small plain" id="hdrRecs" hidden><svg class="i"><use href="#i-clock"/></svg>기록</button>
+  <button class="btn small plain" id="hdrAdd" hidden aria-label="추가"><svg class="i"><use href="#i-plus"/></svg><span class="lbl">추가</span></button>
+  <button class="btn small plain" id="hdrRecs" hidden aria-label="기록"><svg class="i"><use href="#i-clock"/></svg><span class="lbl">기록</span></button>
   <a class="btn small plain" href="help.html" target="_blank" rel="noopener">설명서</a>
   <button class="btn small plain" id="hdrOut" hidden>로그아웃</button>
 </header>
