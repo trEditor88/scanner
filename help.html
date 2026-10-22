@@ -73,7 +73,7 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--border);font-
 </ol>
 <ul>
 <li><span class="b">자동 찾기</span>: 모서리를 다시 찾아요. <span class="b">전체 선택</span>: 사진 전체를 그대로 써요.</li>
-<li><span class="b">AI로 찾기</span>: 배경이 복잡하거나 종이와 바닥 색이 비슷해서 자동 찾기가 틀릴 때 AI(Google Gemini)가 모서리를 찾아요. 누르면 그 사진이 Google 로 보내져요. AI로 읽기와 같은 하루 횟수를 써요.</li>
+<li><span class="b">AI로 찾기</span>: 배경이 복잡하거나 종이와 바닥 색이 비슷해서 자동 찾기가 틀릴 때 AI(Anthropic Claude)가 모서리를 찾아요. 누르면 그 사진이 Anthropic(Claude)으로 보내져요(Claude 가 안 되면(한도·연결 문제 등) Google Gemini 로). AI로 읽기와 같은 하루 횟수를 써요.</li>
 <li>위쪽 돌리기 버튼으로 90도씩 돌리고, 화살표 버튼으로 쪽 순서를 바꾸고, 휴지통으로 쪽을 지워요.</li>
 <li><span class="b">자르기</span> / <span class="b">결과</span> 단추로 원래 사진과 보정된 결과를 오갈 수 있어요.</li>
 </ul>
@@ -110,19 +110,19 @@ footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--border);font-
 </ol>
 <div class="tbl"><table>
 <tr><th>방법</th><th>특징</th></tr>
-<tr><td><b>AI로 읽기</b> (기본)</td><td>Google 의 AI(Gemini)가 읽어요. 손글씨·표·작은 글씨도 잘 읽고 줄바꿈도 정리해 줘요. 하루 쓸 수 있는 횟수가 정해져 있어요(보통 20번).</td></tr>
+<tr><td><b>AI로 읽기</b> (기본)</td><td>Anthropic 의 AI(Claude)가 빠르게 읽어요(안 되면 Google 의 Gemini 가). 손글씨·표·작은 글씨도 잘 읽고 줄바꿈도 정리해 줘요. 하루 쓸 수 있는 횟수가 정해져 있어요(보통 20번).</td></tr>
 <tr><td><b>정밀하게 읽기</b></td><td>Anthropic 의 AI(Claude)가 꼼꼼히 읽어요. 휜 책 면, 손글씨, 표(칸 맞춰 정리), 문제 번호·보기·수식에 가장 강해요. 하루 쓸 수 있는 장수가 정해져 있어요(보통 <b>5장</b>). 한 장에 몇 초~1분 걸려요.</td></tr>
 <tr><td><b>기기 안에서 읽기</b></td><td>사진이 밖으로 나가지 않고 이 기기 안에서만 읽어요. 처음 한 번 인식 자료(약 10MB)를 내려받고, 언어를 골라야 해요. 인쇄된 글자는 잘 읽지만 손글씨·표에는 약해요.</td></tr>
 </table></div>
 <div class="note warn"><b>AI로 읽으면 사진이 Google 또는 Anthropic 으로 보내져요.</b>
 <ul style="margin:8px 0 0">
-<li>글자를 뽑을 쪽의 보정된 사진이 스캐너를 거쳐 <b>Google Gemini</b>로 보내지고, Google 이 읽은 글자를 돌려줍니다.</li>
-<li>보낸 사진은 Google 의 정책에 따라 처리되며, Google 이 서비스를 개선하는 데 쓸 수도 있어요.</li>
+<li><b>AI로 읽기</b>는 글자를 뽑을 쪽의 보정된 사진이 스캐너를 거쳐 <b>Anthropic(Claude)</b>으로 보내지고, 읽은 글자를 돌려줍니다. Claude 가 안 되면(한도·연결 문제 등) <b>Google Gemini</b>로 보내져요.</li>
+<li>Google 로 보낸 사진은 Google 의 정책에 따라 처리되며, Google 이 서비스를 개선하는 데 쓸 수도 있어요.</li>
 <li><b>정밀하게 읽기</b>를 고르면 사진이 <b>Anthropic(Claude)</b>으로 보내져요. 스캐너를 운영하는 컴퓨터를 거쳐 처리될 수 있고, 다 읽으면 그 사진은 지워져요(하루 안에 자동 정리).</li>
 <li>주민등록번호·성적·건강 정보처럼 <b>남에게 보이면 안 되는 문서</b>는 <b>기기 안에서 읽기</b>를 고르세요. 고른 방법은 이 기기에 기억돼요.</li>
 <li><b>AI 자동 보정</b>·<b>AI로 찾기</b>(사진이 나감)와 <b>글자 활용</b>(글자가 나감)도 밖으로 보내지므로, 이런 문서에는 누르지 마세요.</li>
 </ul></div>
-<p>AI 읽기가 안 될 때(오늘 횟수를 다 썼거나, 붐비거나, 연결이 끊겼을 때)는 자동으로 <b>기기 안에서 읽기</b>로 바꿔 읽고(고르지 않은 다른 회사로는 사진을 보내지 않아요), 글자 칸 위에 그 이유를 알려 줘요.</p>
+<p>AI 읽기가 안 될 때(오늘 횟수를 다 썼거나, 붐비거나, 연결이 끊겼을 때)는 자동으로 <b>기기 안에서 읽기</b>로 바꿔 읽고(<b>정밀하게 읽기</b>가 안 될 때는 고르지 않은 다른 회사로 사진을 보내지 않아요. <b>AI로 읽기</b>는 Claude 가 안 되면 Google Gemini 로 한 번 더 읽고, 그것도 안 되면 기기 안에서 읽어요), 글자 칸 위에 그 이유를 알려 줘요.</p>
 
 <h3>글자 활용</h3>
 <p>뽑은 글자로 <span class="b">요약</span>, <span class="b">영어로 번역</span>, <span class="b">한국어로 번역</span>, <span class="b">표 → 엑셀</span>을 할 수 있어요. 표는 엑셀에서 열리는 파일(CSV)로 저장돼요. 이때는 사진이 아니라 <b>글자만</b> Anthropic(Claude)으로 보내지고(Claude 가 안 되면(한도·연결 문제 등) Google Gemini 로), AI로 읽기와 같은 하루 횟수를 써요.</p>

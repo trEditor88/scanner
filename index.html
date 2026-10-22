@@ -273,11 +273,11 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
         <div class="toolrow">
           <button class="btn small plain" id="bAuto"><svg class="i"><use href="#i-magic"/></svg>자동 찾기</button>
           <button class="btn small plain" id="bFull"><svg class="i"><use href="#i-full"/></svg>전체 선택</button>
-          <button class="btn small plain" id="bAiCorner" title="사진을 Google(Gemini)로 보내 모서리를 찾아요"><svg class="i"><use href="#i-magic"/></svg>AI로 찾기</button>
+          <button class="btn small plain" id="bAiCorner" title="사진을 Anthropic(Claude)으로 보내 모서리를 찾아요(안 되면 Google Gemini)"><svg class="i"><use href="#i-magic"/></svg>AI로 찾기</button>
           <div style="flex:1"></div>
           <button class="btn small primary" id="bApply"><svg class="i"><use href="#i-check"/></svg>적용</button>
         </div>
-        <p class="hint">파란 점 네 개를 문서 모서리에 맞추세요. 점을 누르고 화살표 키로도 움직일 수 있어요. 자동 찾기가 틀리면 <b>AI로 찾기</b>(사진이 Google 로 가요).</p>
+        <p class="hint">파란 점 네 개를 문서 모서리에 맞추세요. 점을 누르고 화살표 키로도 움직일 수 있어요. 자동 찾기가 틀리면 <b>AI로 찾기</b>(사진이 Anthropic 으로, 안 되면 Google 로 가요).</p>
       </div>
     </div>
 
@@ -316,7 +316,7 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
 
       <div class="panel">
         <h2><svg class="i"><use href="#i-text"/></svg>텍스트 추출</h2>
-        <div class="field"><label for="selEngine">방법</label><select id="selEngine"><option value="ai">AI로 읽기 (Gemini)</option><option value="claude">정밀하게 읽기 (Claude)</option><option value="local">기기 안에서 읽기</option></select></div>
+        <div class="field"><label for="selEngine">방법</label><select id="selEngine"><option value="ai">AI로 읽기</option><option value="claude">정밀하게 읽기 (Claude)</option><option value="local">기기 안에서 읽기</option></select></div>
         <p class="note" id="engineNote" style="margin:-4px 0 10px"><span id="engineWho"></span> <a href="help.html#ai" target="_blank" rel="noopener">자세히</a></p>
         <p class="note" id="aiLeft" hidden style="margin:-6px 0 10px"></p>
         <div class="field" id="langRow"><label for="selLang">언어</label><select id="selLang"><option value="kor+eng">한국어 + 영어</option><option value="eng">영어만</option><option value="kor">한국어만</option><option value="jpn+eng">일본어 + 영어</option><option value="chi_sim+eng">중국어(간체) + 영어</option></select></div>
@@ -1295,7 +1295,7 @@ async function runOcr(list) {
     $('#ocrOut').value = ocrLast = txt;
     const done = viaCl ? `Claude가 정밀하게 읽었어요${leftTxt(left, '장')}` : viaAi ? `AI로 읽었어요${leftTxt(left)}` : '';
     if (viaCl || viaAi || fellBack) aiLeftLoad().catch(() => {});
-    const how = fellBack ? `${fellBack} → ${mode === 'ai' ? 'Gemini' : '기기 안에서'} 읽었어요. ` : done ? done + '. ' : '';
+    const how = fellBack ? `${fellBack} → ${mode === 'ai' ? 'AI로' : '기기 안에서'} 읽었어요. ` : done ? done + '. ' : '';
     ocrProgress(null, how + (txt ? `${txt.replace(/\s/g, '').length}자. 틀린 글자는 직접 고쳐 쓰세요.` : '글자를 찾지 못했어요. 보정을 "흑백"으로 바꾸거나 더 밝게 찍어 보세요.'));
   } catch (e) {
     console.error(e); if (ocrW) ocrW.terminate().catch(() => {}); ocrW = null; ocrLang = '';
@@ -1320,7 +1320,7 @@ const leftTxt = (n, unit) => n == null ? '' : `(오늘 ${n}${unit || '번'} 남�
 function engineUi() {   // 언어 고르기는 기기 안 인식기에만 필요(AI 는 알아서 읽음). 고른 방법은 이 기기에 기억
   const v = $('#selEngine').value, ai = v !== 'local';
   $('#langRow').hidden = ai; $('#engineNote').hidden = !ai;
-  $('#engineWho').textContent = v === 'claude' ? '이 쪽 사진이 Anthropic(Claude)으로 보내져요. 휜 책·손글씨·표에 강해요.' : 'AI로 읽으면 이 쪽 사진이 Google(Gemini)로 보내져요.';
+  $('#engineWho').textContent = v === 'claude' ? '이 쪽 사진이 Anthropic(Claude)으로 보내져요. 휜 책·손글씨·표에 강해요.' : 'AI로 읽으면 이 쪽 사진이 Anthropic(Claude)으로 보내져요(안 되면 Google Gemini 로).';
   $('#ocrMsg').textContent = ai ? '' : '처음 한 번은 글자 인식 자료(약 10MB)를 내려받아요.';
   try { localStorage.setItem('scanner:engine', $('#selEngine').value); } catch (e) {}
   aiLeftUi();
