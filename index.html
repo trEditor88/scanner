@@ -317,6 +317,7 @@ footer{color:var(--ink-48);font-size:.8125rem;text-align:center;padding:32px 16p
         <h2><svg class="i"><use href="#i-text"/></svg>텍스트 추출</h2>
         <div class="field"><label for="selEngine">방법</label><select id="selEngine"><option value="ai">AI로 읽기 (Gemini)</option><option value="claude">정밀하게 읽기 (Claude)</option><option value="local">기기 안에서 읽기</option></select></div>
         <p class="note" id="engineNote" style="margin:-4px 0 10px"><span id="engineWho"></span> <a href="help.html#ai" target="_blank" rel="noopener">자세히</a></p>
+        <p class="note" id="aiLeft" hidden style="margin:-6px 0 10px"></p>
         <div class="field" id="langRow"><label for="selLang">언어</label><select id="selLang"><option value="kor+eng">한국어 + 영어</option><option value="eng">영어만</option><option value="kor">한국어만</option><option value="jpn+eng">일본어 + 영어</option><option value="chi_sim+eng">중국어(간체) + 영어</option></select></div>
         <div class="grid2">
           <button class="btn primary" id="bOcr">이 쪽 추출</button>
@@ -612,6 +613,7 @@ function renderAuth() {
   $('#gate').hidden = on; $('#drop').hidden = !on;
   $('#hdrRecs').hidden = $('#hdrOut').hidden = !on;
   $('#who').textContent = on ? (auth.user.name || auth.user.id) + ' 님' : '';
+  if (on) aiLeftLoad().catch(() => {}); else { aiLeftV = null; $('#aiLeft').hidden = true; }
 }
 async function ssoFromHash() {
   const m = location.hash.match(/^#sso=([A-Za-z0-9]{40})$/);
@@ -1161,14 +1163,14 @@ async function tessRead(c) {   // 기기 안 인식기(Tesseract). 처음 한 �
   const { data } = await ocrW.recognize(c);
   return tidy(data.text);
 }
-const AI_ERRS = { bad_task: '할 수 없는 작업이에요', no_text: '먼저 글자를 뽑아 주세요', too_long: '글자가 너무 많아요(2만 자까지)', ai_user_limit: '오늘 AI 읽기 횟수를 다 썼어요', ai_limit: 'AI 읽기가 오늘 붐벼서 쉬는 중이에요', ai_off: 'AI 읽기를 지금 쓸 수 없어요', ai_error: 'AI 읽기에 실패했어요', ai_empty: 'AI가 글자를 찾지 못했어요', bad_image: '사진이 너무 커요', network: '서버에 연결하지 못했어요' };
+const AI_ERRS = { bad_task: '할 수 없는 작업이에요', no_text: '먼저 글자를 뽑아 주세요', too_long: '글자가 너무 많아요(2만 자까지)', ai_user_limit: '오늘 AI 횟수를 다 썼어요. 내일 0시(한국 시각)에 다시 채워져요. 더 필요하면 관리자에게 말해 주세요.', ai_limit: '오늘 전체 AI 사용량이 다 찼어요', ai_off: 'AI 읽기를 지금 쓸 수 없어요', ai_error: 'AI 읽기에 실패했어요', ai_empty: 'AI가 글자를 찾지 못했어요', bad_image: '사진이 너무 커요', network: '서버에 연결하지 못했어요' };
 async function aiRead(c) {   // → {text} 또는 {err}
   const img = jpegUnder(c, 1800, 440000);
   if (!img) return { err: 'bad_image' };
   const r = await api('scanOcr', { token: auth && auth.token, data: img.b });
   return r.ok ? { text: String(r.text || '').trim(), left: r.left } : { err: r.error || 'ai_error' };
 }
-const CL_ERRS = Object.assign({}, AI_ERRS, { ai_user_limit: '오늘 정밀하게 읽기 횟수를 다 썼어요', ai_limit: '정밀하게 읽기가 오늘 붐벼서 쉬는 중이에요', ai_off: '정밀하게 읽기를 지금 쓸 수 없어요', ai_error: '정밀하게 읽기에 실패했어요' });
+const CL_ERRS = Object.assign({}, AI_ERRS, { ai_user_limit: '오늘 AI 횟수를 다 썼어요. 내일 0시(한국 시각)에 다시 채워져요. 더 필요하면 관리자에게 말해 주세요.', ai_limit: '정밀하게 읽기가 오늘 붐벼서 쉬는 중이에요', ai_off: '정밀하게 읽기를 지금 쓸 수 없어요', ai_error: '정밀하게 읽기에 실패했어요' });
 async function claudeRead(c, phase) {   // → {text, left} 또는 {err}. 서버가 PC(켜져 있으면) 또는 Claude API 로 읽는다
   const img = jpegUnder(c, 1800, 440000);
   if (!img) return { err: 'bad_image' };
@@ -1219,7 +1221,8 @@ async function runOcr(list) {
     }
     const txt = parts.join('\n\n').trim();
     $('#ocrOut').value = ocrLast = txt;
-    const done = viaCl ? `Claude가 정밀하게 읽었어요${left != null ? `(오늘 ${left}장 남음)` : ''}` : viaAi ? `AI로 읽었어요${left != null ? `(오늘 ${left}번 남음)` : ''}` : '';
+    const done = viaCl ? `Claude가 정밀하게 읽었어요${leftTxt(left, '장')}` : viaAi ? `AI로 읽었어요${leftTxt(left)}` : '';
+    if (viaCl || viaAi || fellBack) aiLeftLoad().catch(() => {});
     const how = fellBack ? `${fellBack} → ${mode === 'ai' ? 'Gemini' : '기기 안에서'} 읽었어요. ` : done ? done + '. ' : '';
     ocrProgress(null, how + (txt ? `${txt.replace(/\s/g, '').length}자. 틀린 글자는 직접 고쳐 쓰세요.` : '글자를 찾지 못했어요. 보정을 "흑백"으로 바꾸거나 더 밝게 찍어 보세요.'));
   } catch (e) {
@@ -1227,12 +1230,28 @@ async function runOcr(list) {
     ocrProgress(null, '글자 인식에 실패했어요: ' + (e.message || e));
   } finally { ocrBusy = working = false; $('#bOcr').disabled = $('#bOcrAll').disabled = false; }
 }
+var aiLeftV = null;   // (var: renderAuth 가 이 줄보다 먼저 불릴 수 있음) { scan, scanPlus } 오늘 남은 횟수(관리자 = null)
+async function aiLeftLoad() {
+  if (!auth) return;
+  const r = await api('aiUsage', { svc: 'scan', token: auth.token });
+  if (!r.ok || r.unlimited) { aiLeftV = null; $('#aiLeft').hidden = true; return; }
+  aiLeftV = Object.fromEntries(r.items.map(x => [x.f, x.left])); aiLeftUi();
+}
+function aiLeftUi() {
+  const el = $('#aiLeft'), v = $('#selEngine').value;
+  if (!aiLeftV || v === 'local') { el.hidden = true; return; }
+  const n = v === 'claude' ? aiLeftV.scanPlus : aiLeftV.scan;
+  el.hidden = false; el.textContent = `오늘 남은 횟수 ${n}${v === 'claude' ? '장' : '번'}` + (v === 'claude' ? '' : ' (AI 보정·모서리 찾기·글자 활용과 같이 씀)');
+  el.style.color = n === 0 ? 'var(--bad, #c0392b)' : '';
+}
+const leftTxt = (n, unit) => n == null ? '' : `(오늘 ${n}${unit || '번'} 남음)`;
 function engineUi() {   // 언어 고르기는 기기 안 인식기에만 필요(AI 는 알아서 읽음). 고른 방법은 이 기기에 기억
   const v = $('#selEngine').value, ai = v !== 'local';
   $('#langRow').hidden = ai; $('#engineNote').hidden = !ai;
   $('#engineWho').textContent = v === 'claude' ? '이 쪽 사진이 Anthropic(Claude)으로 보내져요. 휜 책·손글씨·표에 강해요.' : 'AI로 읽으면 이 쪽 사진이 Google(Gemini)로 보내져요.';
   $('#ocrMsg').textContent = ai ? '' : '처음 한 번은 글자 인식 자료(약 10MB)를 내려받아요.';
   try { localStorage.setItem('scanner:engine', $('#selEngine').value); } catch (e) {}
+  aiLeftUi();
 }
 try { const e = localStorage.getItem('scanner:engine'); if (e === 'local' || e === 'claude') $('#selEngine').value = e; } catch (e) {}
 $('#selEngine').onchange = engineUi; engineUi();
@@ -1307,7 +1326,7 @@ $('#bAiFix').onclick = () => safe(async () => {
   p.filter = Object.prototype.hasOwnProperty.call(FILTER_KO, st.filter) ? st.filter : 'magic'; p.bright = st.bright | 0; p.contrast = st.contrast | 0; p.flat = !!st.flat;
   S.mode = 'res'; refreshResult();
   const what = [turns ? `${st.rotate}° 돌림` : '', FILTER_KO[p.filter], p.flat ? '휜 줄 펴기' : '', p.bright ? `밝기 ${p.bright}` : '', p.contrast ? `대비 ${p.contrast}` : ''].filter(Boolean).join(' · ');
-  toast(`AI 보정: ${what}${st.reason ? ' — ' + st.reason : ''} (오늘 ${r.left}번 남음)`);
+  toast(`AI 보정: ${what}${st.reason ? ' — ' + st.reason : ''} ${leftTxt(r.left)}`); aiLeftLoad().catch(() => {});
 });
 
 /* ---------- AI로 모서리 찾기(2) ---------- */
@@ -1321,7 +1340,7 @@ $('#bAiCorner').onclick = () => safe(async () => {
   if (!r.found) return toast('AI도 문서를 찾지 못했어요. 점을 직접 옮겨 주세요');
   p.quad = orderCorners(r.corners.map(([x, y]) => [clamp01(x), clamp01(y)]));
   S.mode = 'crop'; renderEditor();
-  toast(`AI가 찾은 모서리예요. 맞으면 적용을 누르세요(오늘 ${r.left}번 남음)`);
+  toast(`AI가 찾은 모서리예요. 맞으면 적용을 누르세요${leftTxt(r.left)}`); aiLeftLoad().catch(() => {});
 });
 
 /* ---------- 글자 활용(5): 요약·번역·표 → 엑셀 ---------- */
@@ -1346,7 +1365,7 @@ document.querySelectorAll('[data-ai]').forEach(b => b.onclick = () => safe(async
     return toast(`표(${r.rows.length}줄)를 엑셀 파일(CSV)로 저장했어요`);
   }
   $('#aiOut').value = r.text;
-  toast(`${AI_TASK_KO[task]}을 만들었어요(오늘 ${r.left}번 남음)`);
+  toast(`${AI_TASK_KO[task]}을 만들었어요${leftTxt(r.left)}`); aiLeftLoad().catch(() => {});
 }));
 $('#bAiCopy').onclick = async () => { const t = $('#aiOut').value; if (!t) return; try { await navigator.clipboard.writeText(t); } catch { $('#aiOut').select(); document.execCommand('copy'); } toast('복사했어요'); };
 $('#bAiTxt').onclick = () => { const t = $('#aiOut').value; if (t) download(new Blob([t], { type: 'text/plain;charset=utf-8' }), `스캔_AI_${stamp()}.txt`); };
